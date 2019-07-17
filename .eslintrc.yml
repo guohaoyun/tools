@@ -1,0 +1,37 @@
+extends: eslint:recommended
+env:
+  node: true
+  es6: true
+  jest: true
+
+parserOptions:
+  ecmaVersion: 8
+
+globals:
+  logger: true
+rules:
+  curly: 0
+  eqeqeq: 2
+  space-before-function-paren: 0
+  object-property-newline: 0
+  yoda: 0
+  arrow-parens: [2, as-needed]
+  arrow-spacing: [2, {before: true, after: true}]
+  no-console: 2
+  no-unused-vars: 0
+  dot-location: [2, property]
+  prefer-arrow-callback: 2
+  consistent-return: [1, {}]
+  semi: [2, always]
+  indent: [warn, 2, {SwitchCase: 1}]
+  max-len: [2, {code: 180, ignoreRegExpLiterals: true}]
+  max-params: [2, 6]
+  max-statements-per-line: [2, {max: 1}]
+  comma-dangle: [error, never]
+  array-bracket-spacing: 0
+  # linebreak-style: [error, unix]
+  object-curly-spacing: [error, always]
+  comma-spacing: ["error", { "before": false, "after": true }]
+
+  
+  
