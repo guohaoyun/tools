@@ -1,4 +1,4 @@
-function writeOneMillionTimes(writer, data, encoding, callback) {
+function test(writer, data, encoding, callback) {
   let i = 10000;
   write();
   function write() {
@@ -10,7 +10,7 @@ function writeOneMillionTimes(writer, data, encoding, callback) {
     if (i > 0) {
       // 这里提前停下了，'drain' 事件触发后才可以继续写入  
       console.log('drain', i);
-      writer.on('drain', write);
+      writer.once('drain', write);
     }
   }
 }
@@ -23,9 +23,9 @@ const writer = new Writable({
       callback && callback();
     });
   },
-  highWaterMark: 50000
+  highWaterMark: 5000 // 单位字节
 });
 
-writeOneMillionTimes(writer, 'simple', 'utf8', () => {
+test(writer, 'simple', 'utf8', () => {
   console.log('end');
 });

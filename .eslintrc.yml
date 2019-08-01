@@ -9,6 +9,8 @@ parserOptions:
 
 globals:
   logger: true
+  config: true
+  mongoClient: true
 rules:
   curly: 0
   eqeqeq: 2
