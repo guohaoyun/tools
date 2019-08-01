@@ -1,17 +1,17 @@
-const MongoClient = require('mongodb').MongoClient;
-
-exports.connect = async () => {
-
-  try {
-    global.mongoClient = await MongoClient.connect(config.mongodbUrl, { useNewUrlParser: true, promiseLibrary: Promise } );
-    const db = await mongoClient.db();
-    const t = await db.collection('tbl_group').find({}).toArray();
-    console.log(t);
-  } catch (error) {
-    logger.error(`connect to mongodb fail`);
+class MongoClient {
+  static async connectToMongo() {
+    if (this.db) return Promise.resolve(this.db);
+    return require('mongodb').MongoClient.connect(this.url, this.options)
+      .then(client => this.db = client.db(config.mongodb.dbname));
   }
-  
+}
+
+MongoClient.db = null;
+MongoClient.url = config.mongodb.url;
+MongoClient.options = {
+  promiseLibrary: Promise,
+  useNewUrlParser: true
 };
 
-
+module.exports = { MongoClient };
 

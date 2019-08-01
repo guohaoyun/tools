@@ -1,6 +1,8 @@
 const _ = require('lodash');
 const AMQPClient = require('./amqp_client');
 let amqp4web, amqp4local;
+const Consumer = require('../mongodb/consumer');
+const Producer = require('../mongodb/producer');
 
 
 async function init(type) {
@@ -314,14 +316,7 @@ async function sendMqsEvent(item, action) {
   return msg;
 }
 async function getConsumer(ids) {
-  let consumers = [];
-  if (mqsMode === 'all') {
-    consumers = await app.model.Subscribe.aggregate([{ '$match': { status: { '$ne': -1 } } }, { '$lookup': { from: 'tbl_project', localField: 'projectId', foreignField: 'id', as: 'project' } }]);
-  } else if (mqsMode === 'hash') {
-    consumers = await app.model.Subscribe.aggregate([{ '$match': { id: { '$in': ids }, status: { '$ne': -1 } } },
-      { '$lookup': { from: 'tbl_project', localField: 'projectId', foreignField: 'id', as: 'project' } }]);
-  }
-  return consumers;
+  return Subscribe.aggregate([{ '$match': { status: { '$ne': -1 } } }, { '$lookup': { from: 'tbl_project', localField: 'projectId', foreignField: 'id', as: 'project' } }]);
 }
 async function getProducer(ids) {
   let producers = [];

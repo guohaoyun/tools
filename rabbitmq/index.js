@@ -1,14 +1,22 @@
-const Koa = require('koa');
-const app = new Koa();
-const routes = require('./routes');
-require('./mongodb').connect();
-
 global.Promise = require('bluebird');
 global.logger = console;
+global.config = require('./config');
+const Koa = require('koa');
+const app = new Koa();
 
-// 加载路由中间件
-app.use(routes.routes()).use(routes.allowedMethods());
+async function load() {
 
-app.listen(config.httpPort, () => {
-  logger.log(`app is starting at port ${config.httpPort}`);
-});
+  await require('./mongodb').MongoClient.connectToMongo();
+
+  const routes = require('./routes');
+  // 加载路由中间件
+  app.use(routes.routes()).use(routes.allowedMethods());
+
+  app.listen(config.httpPort, () => {
+    logger.log(`app is starting at port ${config.httpPort}`);
+  });
+
+}
+
+load();
+
