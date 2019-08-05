@@ -19,6 +19,7 @@ const EventMessage = require('./event_message');
 
 const allProducer = {}; // 生产者任务对象集合
 const allConsumer = {}; // 消费者任务对象集合
+const app = {};
 
 const keepaliveQueueId = 'keepalive.queue';
 const exchangeId = 'event.exchange';
@@ -36,12 +37,13 @@ async function init(type) {
   if (!['producer', 'consumer', 'web'].includes(type)) throw Error('进程类型不明确');
 
   const { connect4local, connect4web } = config;
-  amqp4web = await new AMQPClient().connect(connect4web);
-  amqp4local = await new AMQPClient().connect(connect4local);
+  amqp4web = app.amqp4web = await new AMQPClient().connect(connect4web);
+  amqp4local = app.amqp4local = await new AMQPClient().connect(connect4local);
+  
   if (processType === 'producer') {
     const producerList = await getProducer();
     for (const producer of producerList) {
-      const ProducerItem = new amqpProducer(producer);
+      const ProducerItem = new amqpProducer(app, producer);
       const success = await ProducerItem.create();
       if (success) {
         allProducer[ProducerItem.id] = ProducerItem;
@@ -51,7 +53,7 @@ async function init(type) {
   if (processType === 'consumer') {
     const consumerList = await getConsumer();
     for (const consumer of consumerList) {
-      const ConsumerItem = new amqpConsumer(consumer);
+      const ConsumerItem = new amqpConsumer(app, consumer);
       const success = await ConsumerItem.create();
       if (success) {
         allConsumer[ConsumerItem.id] = ConsumerItem;
