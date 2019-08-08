@@ -1,13 +1,15 @@
 // --no-timeout
-var assert = require('assert');
-var should = require('should');
+require('assert');
+require('should');
 const Promise = require('bluebird');
 const rp = require('request-promise');
 const ids = [182, 183];
-const startConsumer183 = 'http://127.0.0.1:7003/subscribe/change?id=183&status=4&projectId=2&hxId=1853';
-const startConsumer182 = 'http://127.0.0.1:7003/subscribe/change?id=182&status=4&projectId=2&hxId=1853';
-const stopConsumer183 = 'http://127.0.0.1:7003/subscribe/change?id=183&status=3&projectId=2&hxId=1853';
-const stopConsumer182 = 'http://127.0.0.1:7003/subscribe/change?id=182&status=3&projectId=2&hxId=1853';
+const base = 'http://127.0.0.1:7003';
+const startConsumer183 = `${base}/subscribe/change?id=183&status=4&projectId=2&hxId=1853`;
+const startConsumer182 = `${base}/subscribe/change?id=182&status=4&projectId=2&hxId=1853`;
+const stopConsumer183 = `${base}/subscribe/change?id=183&status=3&projectId=2&hxId=1853`;
+const stopConsumer182 = `${base}/subscribe/change?id=182&status=3&projectId=2&hxId=1853`;
+const updateUrl = `${base}/subscribe/update`;
 let mongoClient, db;
 
 before(async () => {
@@ -28,6 +30,7 @@ async function init() {
   await db.collection('tbl_subscribe').updateMany({ id: { '$in': ids } }, { '$set': { lastVersion: 0, batch: 2 } });
   // 业务方数据清空
   await db.collection('tbl_mqs_subscribe').updateMany({}, { '$set': { isDelete: false } });
+  return true;
 }
 
 async function check() {
@@ -40,6 +43,21 @@ async function check() {
     const count = await db.collection('tbl_consumer').countDocuments({ subscribeId: { '$in': ids }, cmdtype: 'test_dc6' });
     (count).should.be.exactly(56).and.be.a.Number();
   });
+  return true;
+}
+
+// 改变version后的统计
+async function check2() {
+  it('test_sms有13条', async () => {
+    const count = await db.collection('tbl_consumer').countDocuments({ subscribeId: { '$in': ids }, cmdtype: 'test_sms', version: { '$gt': 1564711143849 } });
+    (count).should.be.exactly(13).and.be.a.Number();
+  });
+
+  it('test_dc6有18条', async () => {
+    const count = await db.collection('tbl_consumer').countDocuments({ subscribeId: { '$in': ids }, cmdtype: 'test_dc6', version: { '$gt': 1564711143849 } });
+    (count).should.be.exactly(18).and.be.a.Number();
+  });
+  return true;
 }
 
 // 改为批量推送
@@ -48,7 +66,7 @@ async function change2Batch() {
   const subscribe183 = await db.collection('tbl_subscribe').findOne({ id: 183 });
   await rp({
     method: 'POST',
-    uri: 'http://127.0.0.1:7003/subscribe/update',
+    uri: updateUrl,
     json: true,
     body: {
       projectId: 2, hxId: 1853, id: 182, method: subscribe182.method, pushUrl: subscribe182.pushUrl,
@@ -59,7 +77,7 @@ async function change2Batch() {
   
   await rp({
     method: 'POST',
-    uri: 'http://127.0.0.1:7003/subscribe/update',
+    uri: updateUrl,
     json: true,
     body: {
       projectId: 2, hxId: 1853, id: 183, method: subscribe183.method, pushUrl: subscribe183.pushUrl,
@@ -67,19 +85,47 @@ async function change2Batch() {
       pushFail: 1
     }
   });
+  return true;
+}
+
+async function updateVersion(lastVersion) {
+  const c182 = await db.collection('tbl_subscribe').findOne({ id: 182 });
+  const c183 = await db.collection('tbl_subscribe').findOne({ id: 183 });
+  // 修改版本号
+  await rp({
+    method: 'POST',
+    uri: updateUrl,
+    json: true,
+    body: {
+      projectId: 2, hxId: 1853, id: 182, method: c182.method, pushUrl: c182.pushUrl,
+      timeout: c182.timeout, warnThreshold: c182.warnThreshold, batch: c182.batch, lastVersion
+    }
+  }).catch(e => console.log(e));
+  await rp({
+    method: 'POST',
+    uri: updateUrl,
+    json: true,
+    body: {
+      projectId: 2, hxId: 1853, id: 182, method: c183.method, pushUrl: c183.pushUrl,
+      timeout: c183.timeout, warnThreshold: c183.warnThreshold, batch: c183.batch, lastVersion
+    }
+  }).catch(e => console.log(e));
+  return true;
 }
 
 async function start() {
   await rp({ uri: startConsumer183, json: true });
   await rp({ uri: startConsumer182, json: true });
+  return true;
 }
 
 async function stop() {
   await rp({ uri: stopConsumer183, json: true });
   await rp({ uri: stopConsumer182, json: true });
+  return true;
 }
 
-describe('消费历史所有（单条推送）', async () => {
+describe.skip('消费历史所有（单条推送）', async () => {
   before(async () => {
     try {
       await init();
@@ -94,7 +140,7 @@ describe('消费历史所有（单条推送）', async () => {
   check();
 });
 
-describe('消费历史所有（多条推送）', () => {
+describe.skip('消费历史所有（多条推送）', () => {
   before(async () => {
     try {
       await init();
@@ -110,7 +156,7 @@ describe('消费历史所有（多条推送）', () => {
   check();
 });
 
-describe('消费-暂停-消费（单条推送）', async () => {
+describe.skip('消费-暂停-消费（单条推送）', async () => {
   before(async () => {
     try {
       await init();
@@ -127,7 +173,7 @@ describe('消费-暂停-消费（单条推送）', async () => {
   check();
 });
 
-describe('消费-暂停-消费（多条推送）', async () => {
+describe.skip('消费-暂停-消费（多条推送）', async () => {
   before(async () => {
     try {
       await init();
@@ -143,4 +189,43 @@ describe('消费-暂停-消费（多条推送）', async () => {
     }
   });
   check();
+});
+
+describe('消费-暂停-改version-消费（单条推送）', async () => {
+  before(async () => {
+    try {
+      await init();
+      await start();
+      await Promise.delay(100);
+      await stop();
+      await Promise.delay(100);
+      await updateVersion(1564711143849);
+      await start();
+      await Promise.delay(3000);
+      await stop();
+    } catch (error) {
+      console.log(error);
+    }
+  });
+  check2();
+});
+
+describe('消费-暂停-改version-消费（多条推送）', async () => {
+  before(async () => {
+    try {
+      await init();
+      await change2Batch();
+      await start();
+      await Promise.delay(100);
+      await stop();
+      await Promise.delay(100);
+      await updateVersion(1564711143849);
+      await start();
+      await Promise.delay(3000);
+      await stop();
+    } catch (error) {
+      console.log(error);
+    }
+  });
+  check2();
 });

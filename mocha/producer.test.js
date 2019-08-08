@@ -1,10 +1,11 @@
-const should = require('should');
+require('should');
 const Promise = require('bluebird');
 const rp = require('request-promise');
 const publishId = 597;
-const startProducer = `http://127.0.0.1:7003/publish/change?id=${publishId}&status=4&projectId=2&hxId=1853`;
-const stopProducer = `http://127.0.0.1:7003/publish/change?id=${publishId}&status=3&projectId=2&hxId=1853`;
-const updatePublish = `http://127.0.0.1:7003/publish/update`;
+const base = 'http://127.0.0.1:7003';
+const startProducer = `${base}/publish/change?id=${publishId}&status=4&projectId=2&hxId=1853`;
+const stopProducer = `${base}/publish/change?id=${publishId}&status=3&projectId=2&hxId=1853`;
+const updatePublish = `${base}/publish/update`;
 let mongoClient, db;
   
 // 最先运行的before
