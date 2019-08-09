@@ -27,10 +27,11 @@ async function init() {
   // 删除所有消费者
   await db.collection('tbl_consumer').deleteMany({ subscribeId: { '$in': ids } });
   // 订阅版本号置为0
-  await db.collection('tbl_subscribe').updateMany({ id: { '$in': ids } }, { '$set': { lastVersion: 0, batch: 2 } });
+  await db.collection('tbl_subscribe').updateMany({ id: { '$in': ids } }, { '$set': { lastVersion: 0, batch: 1 } });
   // 业务方数据清空
   await db.collection('tbl_mqs_subscribe').updateMany({}, { '$set': { isDelete: false } });
-  return true;
+  // await Promise.delay(5000);
+
 }
 
 async function check() {
@@ -43,7 +44,6 @@ async function check() {
     const count = await db.collection('tbl_consumer').countDocuments({ subscribeId: { '$in': ids }, cmdtype: 'test_dc6' });
     (count).should.be.exactly(56).and.be.a.Number();
   });
-  return true;
 }
 
 // 改变version后的统计
@@ -57,7 +57,6 @@ async function check2() {
     const count = await db.collection('tbl_consumer').countDocuments({ subscribeId: { '$in': ids }, cmdtype: 'test_dc6', version: { '$gt': 1564711143849 } });
     (count).should.be.exactly(18).and.be.a.Number();
   });
-  return true;
 }
 
 // 改为批量推送
@@ -85,7 +84,6 @@ async function change2Batch() {
       pushFail: 1
     }
   });
-  return true;
 }
 
 async function updateVersion(lastVersion) {
@@ -110,27 +108,24 @@ async function updateVersion(lastVersion) {
       timeout: c183.timeout, warnThreshold: c183.warnThreshold, batch: c183.batch, lastVersion
     }
   }).catch(e => console.log(e));
-  return true;
 }
 
 async function start() {
   await rp({ uri: startConsumer183, json: true });
   await rp({ uri: startConsumer182, json: true });
-  return true;
 }
 
 async function stop() {
   await rp({ uri: stopConsumer183, json: true });
   await rp({ uri: stopConsumer182, json: true });
-  return true;
 }
 
-describe.skip('消费历史所有（单条推送）', async () => {
+describe('消费历史所有（单条推送）', async () => {
   before(async () => {
     try {
       await init();
       await start();
-      await Promise.delay(2500);
+      await Promise.delay(5000);
       await stop();
     } catch (error) {
       console.log(error);
@@ -140,7 +135,7 @@ describe.skip('消费历史所有（单条推送）', async () => {
   check();
 });
 
-describe.skip('消费历史所有（多条推送）', () => {
+describe('消费历史所有（多条推送）', () => {
   before(async () => {
     try {
       await init();
@@ -156,7 +151,7 @@ describe.skip('消费历史所有（多条推送）', () => {
   check();
 });
 
-describe.skip('消费-暂停-消费（单条推送）', async () => {
+describe('消费-暂停-消费（单条推送）', async () => {
   before(async () => {
     try {
       await init();
@@ -173,7 +168,7 @@ describe.skip('消费-暂停-消费（单条推送）', async () => {
   check();
 });
 
-describe.skip('消费-暂停-消费（多条推送）', async () => {
+describe('消费-暂停-消费（多条推送）', async () => {
   before(async () => {
     try {
       await init();

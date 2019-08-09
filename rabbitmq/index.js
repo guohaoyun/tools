@@ -1,6 +1,16 @@
 global.Promise = require('bluebird');
-global.logger = console;
 global.config = require('./config');
+const log4js = require('log4js');
+log4js.configure({
+  appenders: { 
+    all: { type: 'file', filename: 'mqs', pattern: 'yyyy-MM-dd.log', alwaysIncludePattern: true, level: 'debug' }, 
+    console: { type: 'console' }
+  },
+    
+  categories: { default: { appenders: ['all', 'console'], level: 'debug' } }
+});
+global.logger = log4js.getLogger('mqs');
+
 // const amqpServer = require('./core/amqp_server');
 
 const Koa = require('koa');
@@ -15,7 +25,6 @@ async function load() {
 
   app.listen(config.httpPort, () => {
     logger.log(`app is starting at port ${config.httpPort}`);
-    logger.info(process.argv);
     require('./core/amqp_server').init(process.argv[2]);
   });
 

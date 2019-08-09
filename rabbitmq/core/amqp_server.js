@@ -151,7 +151,7 @@ async function initKeepAlive() {
           for (const [id, lastTime] of Object.entries(keepaliveMsg.serverid)) {
             const t = (Date.now() - lastTime) / 1000; // 距离上次心跳时间
             // 失去心跳超过60秒
-            if (t > 60) logger.info(`进程<${id}>失去心跳，上次心跳时间<${new Date(lastTime).format('yyyy-MM-dd hh:mm:ss')}>`);
+            if (t > 60) logger.error(`进程<${id}>失去心跳，上次心跳时间<${new Date(lastTime).format('yyyy-MM-dd hh:mm:ss')}>`);
           }
           for (const [id, obj] of Object.entries(keepaliveMsg.producer)) {
             const { publishName, status, lastTime, lastVersion, intervalTime, serverid, projectId, projectName } = obj;
@@ -159,7 +159,7 @@ async function initKeepAlive() {
               const t = Date.now() - lastTime; // 距离上次心跳时间
               // 失去心跳超过10分钟
               if (t > (intervalTime + 10 * 60 * 1000)) {
-                logger.info(`项目：<${projectName}(id:${projectId})>
+                logger.error(`项目：<${projectName}(id:${projectId})>
 生产者：<${publishName}(id:${id})>
 上次心跳时间：<${new Date(lastTime).format('yyyy-MM-dd hh:mm:ss')}>，
 当前版本号：<${lastVersion}>，
@@ -276,20 +276,29 @@ async function getConsumer() {
   return Subscribe.aggregate([
     { '$match': { status: { '$ne': -1 } } },
     { '$lookup': { from: 'tbl_project', localField: 'projectId', foreignField: 'id', as: 'project' } }
-  ]);
+  ]).toArray();
 }
 async function getProducer() {
-  const publishList = await Publish.aggregate([
-    { '$match': { status: { '$ne': -1 } } },
-    { '$lookup': { from: 'tbl_project', localField: 'projectId', foreignField: 'id', as: 'project' } }
-  ]);
-  const msgTypes = await Msgtype.find({ publishId: { '$in': publishList.map(p => p.id) } });
-  publishList.forEach((item, index) => {
-    publishList[index].msgtype = [];
-    msgTypes.forEach(msgItem => {
-      if (msgItem.publishId === item.id) publishList[index].msgtype.push(msgItem);
-    });
-  });
+  try {
+    const publishList = await Publish.aggregate([
+      { '$match': { status: { '$ne': -1 } } },
+      { '$lookup': { from: 'tbl_project', localField: 'projectId', foreignField: 'id', as: 'project' } }
+    ]).toArray();
+    const msgtypeList = await Msgtype.find({ publishId: { '$in': publishList.map(p => p.id) } }).toArray();
+    // 为了减少查询开销，先把所有消息类型拿出来，然后逐个匹配发布
+    for (const publish of publishList) {
+      publish.msgtypes = [];
+      for (const msgtype of msgtypeList) {
+        if (msgtype.publishId === publish.id) {
+          publish.msgtypes.push(msgtype);
+        }
+      }
+    }
+    return publishList;
+  } catch (error) {
+    logger.error(`获取生产者集合异常`, error);
+    return [];
+  }
 }
 
 /** 获取心跳数据 */

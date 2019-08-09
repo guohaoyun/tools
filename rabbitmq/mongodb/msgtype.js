@@ -6,7 +6,6 @@ const MongoClient = require('./index').MongoClient;
 // publishId: { type: Number, required: true }, // 发布编号
 // cmdtype: { type: String, required: true }, // 类型代号
 // lastVersion: { type: Number, required: true }, // 最新版本
-// description: String, // 类型描述
 // status: Number, // 状态 1启用 -1已删除
 // createTime: { type: Date, required: true },
 // updateTime: { type: Date, required: true } // 更新时间

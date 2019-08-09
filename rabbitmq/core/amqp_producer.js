@@ -3,6 +3,8 @@
 'use strict';
 //生产者模块
 const schedule = require('node-schedule');
+const rp = require('request-promise');
+
 const EventMessage = require('./event_message');
 const MongoClient = require('../mongodb/index').MongoClient;
 const Publish = require('../mongodb/publish');
@@ -30,7 +32,7 @@ class Producer4AMQP {
     this.intervalTime = publish.intervalTime;
     this.method = publish.method;
     this.pullUrl = publish.pullUrl;
-    this.msgtype = publish.msgtype;
+    this.msgtypes = publish.msgtypes;
     this.createTime = publish.createTime;
     this.updateTime = publish.updateTime;
     this.statisError = 0;//错误统计
@@ -66,7 +68,7 @@ class Producer4AMQP {
     if (!this.statusOk()) return;
     await this.channel.consume(this.queueId, msg => self.consume(msg), { noAck: false, consumerTag: this.identityId });
     const startTime = Date.now() + this.intervalTime;
-    this.schedule = this.rescheduleJob(startTime, () => self.task());
+    this.schedule = schedule.scheduleJob(startTime, () => self.task());
     this.addLog('已启动');
   }
 
@@ -79,47 +81,49 @@ class Producer4AMQP {
     }
     try {
       this.lastTime = Date.now();
-      const postdata = { 'version': this.lastVersion };
-      const rssdata = encrypt(JSON.stringify(postdata), this.project);
-      const options = { gzip: true, dataType: 'text', timeout: this.timeout, method: this.method, data: { rssdata } };
+      const requestData = { 'version': this.lastVersion };
+      const rssdata = encrypt(JSON.stringify(requestData), this.project);
+      const options = { gzip: true, json: true, timeout: this.timeout, method: 'POST', body: { rssdata }, resolveWithFullResponse: true };
       let errormsg, isError;
       const startTime = Date.now();
-      const result = await this.httpclient.request(this.pullUrl, options).catch(ex => {
-        errormsg = { requestData: postdata, responseData: '无', code: ex.code || ex.name, result: '访问异常', startTime };
+      const result = await rp(this.pullUrl, options).catch(ex => {
+        const { message, statusCode, error } = ex;
+        errormsg = { requestData, responseData: message, code: statusCode || error.code, result: '访问异常', startTime };
         isError = true;
       });
-      if (result && result.status !== 200) {
-        errormsg = { requestData: postdata, responseData: result.data, code: result.status, result: '状态码错误', startTime };
+      if (result && result.statusCode !== 200) {
+        errormsg = { requestData, responseData: result.body, code: result.statusCode, result: '状态码错误', startTime };
         isError = true;
       }
-      let content, jsonContent;
+      let response, jsonResponse;
       let maxVersion = 0;
       if (!isError) {
         try {
-          content = decrypt(result.data, this.project);
-          jsonContent = JSON.parse(content);
-          if (jsonContent.code !== 1) {
-            errormsg = { requestData: postdata, responseData: content, code: result.status, result: '返回code不为1', startTime };
+          response = decrypt(result.body, this.project);
+          jsonResponse = JSON.parse(response);
+          if (jsonResponse.code !== 1) {
+            errormsg = { requestData, responseData: response, code: result.statusCode, result: '返回code不为1', startTime };
             isError = true;
           }
-          let tempversion = 0;
-          if (jsonContent.data) {
-            for (let jsonitem of jsonContent.data) {
+          let tempVersion = 0;
+          if (jsonResponse.data) {
+            for (const item of jsonResponse.data) {
               // 确保符合协议
-              let keys = Object.keys(jsonitem);
+              const keys = Object.keys(item);
               if (!keys.includes('version') || !keys.includes('data') || !keys.includes('cmdtype')) {
-                errormsg = { requestData: postdata, responseData: content, code: result.status, result: '非约定文本协议', startTime };
+                errormsg = { requestData, responseData: response, code: result.statusCode, result: '非约定文本协议', startTime };
                 throw Error('格式不完整,version,data,cmdtype');
               }
-              if (+jsonitem.version > tempversion)
-                tempversion = +jsonitem.version;
+              if (+item.version > tempVersion) {
+                tempVersion = +item.version;
+              }
             }
           }
-          if (tempversion > maxVersion) {
-            maxVersion = tempversion;
+          if (tempVersion > maxVersion) {
+            maxVersion = tempVersion;
           }
         } catch (err) {
-          errormsg = { requestData: postdata, responseData: result.data, code: result.status, result: '数据解密错误', startTime };
+          errormsg = { requestData, responseData: response, code: result.statusCode, result: '数据解密错误', startTime };
           isError = true;
         }
       }
@@ -131,7 +135,7 @@ class Producer4AMQP {
         this.statisError = 0;
         // 入队mq
         if (maxVersion > this.lastVersion) {
-          this.channel.sendToQueue(this.queueId, new Buffer(content), { deliveryMode: true });
+          this.channel.sendToQueue(this.queueId, new Buffer(response), { deliveryMode: true });
           /**
            * 假如rabbit服务异常(关闭) waitForConfirms可能会无限阻塞
            * 猜测 waitForConfirms只对发出的消息做确认，不会影响通道上consume的工作
@@ -146,9 +150,7 @@ class Producer4AMQP {
       this.sysError('task异常', err);
     }
     // 重新注册任务
-    const delayTime = this.getDelayTime();
-    
-    this.rescheduleJob(delayTime);
+    this.schedule.reschedule(this.getDelayTime());
   }
 
   async consume(msg) {
@@ -192,8 +194,9 @@ class Producer4AMQP {
       for (const [cmdtype, lastVersion] of Object.entries(newVersion)) {
         allNewVersion.push({
           updateOne: {
-            filter: { publishId: this.id, cmdtype: cmdtype, lastVersion: { $lte: lastVersion } },
-            update: { '$set': { 'lastVersion': lastVersion } }, upsert: false
+            filter: { publishId: this.id, cmdtype, lastVersion: { '$lte': lastVersion } },
+            update: { '$set': { lastVersion } },
+            upsert: false
           }
         });
       }
@@ -218,7 +221,7 @@ class Producer4AMQP {
           await Msgtype.bulkWrite(allNewVersion);
         }
         await Producer.bulkWrite(allNewData);
-        await Publish.updateOne({ id: this.id }, { $set: { lastVersion: maxVersion } }, { upsert: false, session });
+        await Publish.updateOne({ id: this.id }, { '$set': { lastVersion: maxVersion } }, { upsert: false, session });
         await session.commitTransaction();
       } catch (err) {
         this.sysError(`mongodb异常`, err);
@@ -231,16 +234,14 @@ class Producer4AMQP {
         await this.ack(msg, true);
         const allNewCmdType = Object.keys(newVersion);
         // 把有新数据的消息类型推给交换器
-        if (this.msgtype) {
-          for (const msgtypeitem of this.msgtype) {
-            const cmdtype = msgtypeitem.cmdtype;
+        if (this.msgtypes) {
+          for (const msgtype of this.msgtypes) {
+            const cmdtype = msgtype.cmdtype;
             if (allNewCmdType.includes(cmdtype)) {
-              // 增加一个数据格式类型，p2c 代表数据是生产者推送给消费者的
-              const msg = EventMessage.toBuffer({ dataFormatType: 'p2c', version: newVersion[msgtypeitem.cmdtype] });
-              this.channel.publish(this.exchangeId, cmdtype, msg, { deliveryMode: true }, (err, ok) => {
-                if (err) {
-                  self.sysError('推送新数据到交换器失败', err);
-                }
+              // p2c 代表数据是生产者推送给消费者的
+              const msg = EventMessage.toBuffer({ dataFormatType: 'p2c', version: newVersion[cmdtype] });
+              this.channel.publish(this.exchangeId, cmdtype, msg, { deliveryMode: true }, err => {
+                if (err) self.sysError('推送新数据到交换器失败', err);
               });
             }
           }
@@ -266,11 +267,11 @@ class Producer4AMQP {
    */
   stop() {
     let self = this;
-    if (self.schedule) {
-      self.schedule.cancel();
+    if (this.schedule) {
+      this.schedule.cancel();
     }
-    self.statisError = 0;
-    return self.channel.cancel(self.identityId).then(() => self.addLog('已停止'));
+    this.statisError = 0;
+    return this.channel.cancel(this.identityId).then(() => self.addLog('已停止'));
   }
   
   /**
@@ -296,10 +297,12 @@ class Producer4AMQP {
   reset(item) {
     const oldStatus = this.statusOk();
     this.init(item);
-    if (this.schedule && !this.statusOk() && oldStatus)
+    if (this.schedule && !this.statusOk() && oldStatus) {
       this.stop();
-    if (!oldStatus && this.statusOk())
+    }
+    if (!oldStatus && this.statusOk()) {
       this.start();
+    }
   }
 
   /**
@@ -329,17 +332,6 @@ class Producer4AMQP {
       await ack ? this.channel.ack(msg) : this.channel.nack(msg, false, true);
     } catch (error) {
       this.sysError(`${ack ? 'ack' : 'nack'}失败`, error);
-    }
-  }
-
-  /**
-   * 重设定时器
-   */
-  rescheduleJob(delayTime, cb) {
-    try {
-      this.schedule = schedule.scheduleJob(delayTime, cb);
-    } catch (error) {
-      logger.error(`定时器重设失败`);
     }
   }
 

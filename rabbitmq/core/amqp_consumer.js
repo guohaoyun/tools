@@ -24,18 +24,12 @@ class Consumer {
     this.projectId = subscribe.projectId;
     this.subscribeType = subscribe.subscribeType;
     this.timeout = subscribe.timeout;
-    this.network = subscribe.network;
     this.batch = subscribe.batch;
-    this.pushFail = subscribe.pushFail;
     this.method = subscribe.method;
     this.pushUrl = subscribe.pushUrl;
-    this.backupPushUrl = subscribe.backupPushUrl;
     this.cmdtype = subscribe.cmdtype;
     this.batch = subscribe.batch;
-    this.warnThreshold = subscribe.warnThreshold;
     this.statisError = 0;//错误统计 
-    this.alertUser = subscribe.alertUser;
-    this.alertGroup = subscribe.alertGroup;
     this.createTime = subscribe.createTime;
     if (!this.lastTime) {
       this.lastTime = '';
@@ -48,7 +42,6 @@ class Consumer {
     this.queueId = 'Consumer.queue.' + this.id;
     this.exchangeId = 'Producer.exchange.' + this.publishId; // 一个发布只有一个交换器，通过cmdtype路由
     this.identityId = 'Consumer.' + this.id;
-    this.countSchedule = 0;
   }
   async create() {
     let self = this;
