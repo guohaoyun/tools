@@ -1,0 +1,7 @@
+[2019-10-09T20:55:35.364] [INFO] default - tcp services running in 8087
+[2019-10-09T20:55:35.366] [INFO] default - undefined is starting at port undefined
+[2019-10-09T20:55:50.009] [INFO] default - tcp services running in 8087
+[2019-10-09T20:55:54.837] [INFO] default - tcp services running in 8087
+[2019-10-09T20:55:54.838] [INFO] default - undefined is starting at port 2000
+[2019-10-09T20:57:20.012] [INFO] default - tcp services running in 8087
+[2019-10-09T20:57:20.013] [INFO] default - 9090 is starting at port web

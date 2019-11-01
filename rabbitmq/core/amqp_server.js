@@ -109,6 +109,7 @@ async function initKeepAlive() {
     
     // web服 收集心跳数据
     if (processType === 'web') {
+
       channel.consume(keepaliveQueueId, msg => {
         const eventMessage = JSON.parse(msg.content.toString());
         const createTime = +eventMessage.createTime;
@@ -125,25 +126,6 @@ async function initKeepAlive() {
         }
         keepaliveMsg.serverid[eventMessage.body.serverid] = createTime;
       }, { noAck: true });
-
-      // 非web服发送心跳
-      if (processType !== 'web' && !keepaliveSchedule) {
-      // 10秒发一次心跳，暂时发一些简单的字段（未来再增加字段）
-        keepaliveSchedule = schedule.scheduleJob(keepaliveRule, async () => {
-          keepaliveSchedule.cancel();
-          try {
-            const serverid = `${config.serverid}.${processType}.${process.pid}`;
-            const data = { producer: {}, consumer: {}, serverid };
-            for (const [pid, value] of Object.entries(allProducer)) data.producer[pid] = value;
-            for (const [pid, value] of Object.entries(allConsumer)) data.consumer[pid] = value;
-            const buffer = EventMessage.toBuffer(data, EventMessage.KEEPALIVE);
-            await channelGlobal.publish(exchangeId, 'keepalive', buffer);
-          } catch (error) {
-            logger.error(`mqsServer.initKeepAlive publish error： ${error}`);
-          }
-          keepaliveSchedule.reschedule(keepaliveRule);
-        });
-      }
 
       const checkHeartbeatSchedule = schedule.scheduleJob(heartbeatRule, async () => {
         try {
@@ -174,7 +156,36 @@ async function initKeepAlive() {
       });
 
     }
+
+    // 非web服发送心跳
+    if (processType !== 'web' && !keepaliveSchedule) {
+    // 10秒发一次心跳，暂时发一些简单的字段（未来再增加字段）
+      keepaliveSchedule = schedule.scheduleJob(keepaliveRule, async () => {
+        keepaliveSchedule.cancel();
+        try {
+          const serverid = `${config.serverid}.${processType}.${process.pid}`;
+          const data = { producer: {}, consumer: {}, serverid };
+          for (const [pid, value] of Object.entries(allProducer)) {
+            /**
+             * { id: pid, publishName, status, lastTime, lastVersion, pullUrl, intervalTime, serverid, 
+              projectId: project.id, projectName: project.name, isTaskRunning, isConsumeRunning }
+             */
+            data.producer[pid] = _.pick(value, ['id', 'publishName', 'status', 'lastTime', 'lastVersion']);
+          }
+          for (const [pid, value] of Object.entries(allConsumer)) {
+            data.consumer[pid] = _.pick(value, ['id', 'publishId', 'status', 'lastTime', 'lastVersion']);
+          }
+          const buffer = EventMessage.toBuffer(data, EventMessage.KEEPALIVE);
+          await channelGlobal.publish(exchangeId, 'keepalive', buffer);
+        } catch (error) {
+          logger.error(`mqsServer.initKeepAlive publish error： ${error}`);
+        }
+        keepaliveSchedule.reschedule(keepaliveRule);
+      });
+    }
+
     logger.info('mqsServer.initKeepAlive startup success');
+
   } catch (ex) {
     logger.error('mqsServer.initKeepAlive error：' + ex.message);
   }

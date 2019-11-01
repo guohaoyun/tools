@@ -1,10 +1,10 @@
 'use strict';
 const crypto = require('crypto');
+const NodeRSA = require('node-rsa');
+const fs = require('fs');
 
 
 module.exports = {
-
- 
 
   encrypt(content, project) {
     let result = '';

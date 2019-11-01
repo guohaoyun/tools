@@ -111,8 +111,9 @@ class Producer4AMQP {
               // 确保符合协议
               const keys = Object.keys(item);
               if (!keys.includes('version') || !keys.includes('data') || !keys.includes('cmdtype')) {
+                isError = true;
                 errormsg = { requestData, responseData: response, code: result.statusCode, result: '非约定文本协议', startTime };
-                throw Error('格式不完整,version,data,cmdtype');
+                break;
               }
               if (+item.version > tempVersion) {
                 tempVersion = +item.version;
@@ -259,6 +260,7 @@ class Producer4AMQP {
    * @param {Object} message
    */
   taskError(message) {
+    this.statisError++;
     logger.info(`${this.identityId} 发生异常：${JSON.stringify(message)}`);
   }
 

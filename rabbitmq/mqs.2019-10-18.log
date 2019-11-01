@@ -1,0 +1,56 @@
+[2019-10-18T10:24:49.040] [INFO] default - tcp services running in 8087
+[2019-10-18T10:24:49.042] [INFO] default - web is starting at port 8088
+[2019-10-18T10:25:16.545] [TRACE] default - [127.0.0.1:54440] new socket connect
+[2019-10-18T10:25:16.648] [TRACE] default - send to gate[undefined], server[127.0.0.1], address[127.0.0.1:54440] : {"action":"getauth"}, encrypt: 0, encoding: utf8
+[2019-10-18T10:25:16.674] [TRACE] default - receive gate[undefined], server[127.0.0.1], address[127.0.0.1:54440] : {"passport":"57da00080e","server":5301,"servername":"199-5301","encoding":"utf8","gate":"gate200","publishId":1,"action":"r_getauth"}, encryptMark: 0, encoding: utf8
+[2019-10-18T10:25:16.675] [DEBUG] default - 服务器[5301]新连接127.0.0.1:54440被拒绝，无法创建publish对象 { passport: '57da00080e',
+  server: 5301,
+  servername: '199-5301',
+  encoding: 'utf8',
+  gate: 'gate200',
+  publishId: 1,
+  action: 'r_getauth' }
+[2019-10-18T10:25:16.677] [TRACE] default - send to gate[gate200], server[127.0.0.1], address[127.0.0.1:54440] : {"action":"setstep","recode":301,"msg":"server has an error"}, encrypt: 0, encoding: utf8
+[2019-10-18T10:25:16.677] [INFO] default - destroy a server gate[gate200], server[127.0.0.1], address[127.0.0.1:54440]
+[2019-10-18T10:25:16.678] [TRACE] default - receive gate[gate200], server[127.0.0.1], address[127.0.0.1:54440] : {"passport":"57da00080e","server":5301,"servername":"199-5301","encoding":"utf8","gate":"gate200","publishId":1,"action":"r_setstep","recode":0}, encryptMark: 0, encoding: utf8
+[2019-10-18T10:25:16.679] [INFO] default - gate[gate200], server[127.0.0.1], address[127.0.0.1:54440] sokect is end.
+[2019-10-18T10:25:16.680] [WARN] default - gate[gate200], server[127.0.0.1], address[127.0.0.1:54440] sokect is close.
+[2019-10-18T10:26:54.947] [TRACE] default - [127.0.0.1:54470] new socket connect
+[2019-10-18T10:26:54.947] [TRACE] default - send to gate[undefined], server[127.0.0.1], address[127.0.0.1:54470] : {"action":"getauth"}, encrypt: 0, encoding: utf8
+[2019-10-18T10:26:54.963] [TRACE] default - receive gate[undefined], server[127.0.0.1], address[127.0.0.1:54470] : {"passport":"57da00080e","server":5301,"servername":"199-5301","encoding":"utf8","gate":"gate200","publishId":1,"action":"r_getauth"}, encryptMark: 0, encoding: utf8
+[2019-10-18T10:26:54.964] [DEBUG] default - 服务器[5301]新连接127.0.0.1:54470被拒绝，无法创建publish对象 { passport: '57da00080e',
+  server: 5301,
+  servername: '199-5301',
+  encoding: 'utf8',
+  gate: 'gate200',
+  publishId: 1,
+  action: 'r_getauth' }
+[2019-10-18T10:26:54.964] [TRACE] default - send to gate[gate200], server[127.0.0.1], address[127.0.0.1:54470] : {"action":"setstep","recode":301,"msg":"server has an error"}, encrypt: 0, encoding: utf8
+[2019-10-18T10:26:54.964] [INFO] default - destroy a server gate[gate200], server[127.0.0.1], address[127.0.0.1:54470]
+[2019-10-18T10:26:54.965] [TRACE] default - receive gate[gate200], server[127.0.0.1], address[127.0.0.1:54470] : {"passport":"57da00080e","server":5301,"servername":"199-5301","encoding":"utf8","gate":"gate200","publishId":1,"action":"r_setstep","recode":0}, encryptMark: 0, encoding: utf8
+[2019-10-18T10:26:54.966] [INFO] default - gate[gate200], server[127.0.0.1], address[127.0.0.1:54470] sokect is end.
+[2019-10-18T10:26:54.966] [WARN] default - gate[gate200], server[127.0.0.1], address[127.0.0.1:54470] sokect is close.
+[2019-10-18T10:27:08.933] [INFO] default - tcp services running in 8087
+[2019-10-18T10:27:08.935] [INFO] default - web is starting at port 8088
+[2019-10-18T10:28:03.361] [TRACE] default - [127.0.0.1:54520] new socket connect
+[2019-10-18T10:28:03.514] [TRACE] default - send to gate[undefined], server[127.0.0.1], address[127.0.0.1:54520] : {"action":"getauth"}, encrypt: 0, encoding: utf8
+[2019-10-18T10:28:03.538] [TRACE] default - receive gate[undefined], server[127.0.0.1], address[127.0.0.1:54520] : {"passport":"57da00080e","server":5301,"servername":"199-5301","encoding":"utf8","gate":"gate200","publishId":1,"action":"r_getauth"}, encryptMark: 0, encoding: utf8
+[2019-10-18T10:28:03.605] [TRACE] default - send to gate[gate200], server[127.0.0.1], address[127.0.0.1:54520] : {"action":"setstep","recode":0,"step":"authsucceed","msg":"connect succeed"}, encrypt: 0, encoding: utf8
+[2019-10-18T10:28:03.606] [INFO] default - gate[gate200], server[127.0.0.1], address[127.0.0.1:54520] connect succeed
+[2019-10-18T10:28:03.607] [TRACE] default - receive gate[gate200], server[127.0.0.1], address[127.0.0.1:54520] : {"passport":"57da00080e","server":5301,"servername":"199-5301","encoding":"utf8","gate":"gate200","publishId":1,"action":"r_setstep","recode":0}, encryptMark: 0, encoding: utf8
+[2019-10-18T10:31:07.041] [INFO] default - tcp services running in 8087
+[2019-10-18T10:31:07.043] [INFO] default - web is starting at port 8088
+[2019-10-18T10:31:08.752] [TRACE] default - [127.0.0.1:54576] new socket connect
+[2019-10-18T10:31:08.785] [TRACE] default - send to gate[undefined], server[127.0.0.1], address[127.0.0.1:54576] : {"action":"getauth"}, encrypt: 0, encoding: utf8
+[2019-10-18T10:31:08.807] [TRACE] default - receive gate[undefined], server[127.0.0.1], address[127.0.0.1:54576] : {"passport":"57da00080e","server":5301,"servername":"199-5301","encoding":"utf8","gate":"gate200","publishId":1,"action":"r_getauth"}, encryptMark: 0, encoding: utf8
+[2019-10-18T10:31:08.824] [TRACE] default - send to gate[gate200], server[127.0.0.1], address[127.0.0.1:54576] : {"action":"setstep","recode":0,"step":"authsucceed","msg":"connect succeed"}, encrypt: 0, encoding: utf8
+[2019-10-18T10:31:08.824] [INFO] default - gate[gate200], server[127.0.0.1], address[127.0.0.1:54576] connect succeed
+[2019-10-18T10:31:08.825] [TRACE] default - receive gate[gate200], server[127.0.0.1], address[127.0.0.1:54576] : {"passport":"57da00080e","server":5301,"servername":"199-5301","encoding":"utf8","gate":"gate200","publishId":1,"action":"r_setstep","recode":0}, encryptMark: 0, encoding: utf8
+[2019-10-18T10:36:21.833] [INFO] default - tcp services running in 8087
+[2019-10-18T10:36:21.835] [INFO] default - web is starting at port 8088
+[2019-10-18T10:36:23.098] [TRACE] default - [127.0.0.1:54686] new socket connect
+[2019-10-18T10:36:23.132] [TRACE] default - send to gate[undefined], server[127.0.0.1], address[127.0.0.1:54686] : {"action":"getauth"}, encrypt: 0, encoding: utf8
+[2019-10-18T10:36:23.155] [TRACE] default - receive gate[undefined], server[127.0.0.1], address[127.0.0.1:54686] : {"passport":"57da00080e","server":5301,"servername":"199-5301","encoding":"utf8","gate":"gate200","publishId":1,"action":"r_getauth"}, encryptMark: 0, encoding: utf8
+[2019-10-18T10:36:23.175] [TRACE] default - send to gate[gate200], server[127.0.0.1], address[127.0.0.1:54686] : {"action":"setstep","recode":0,"step":"authsucceed","msg":"connect succeed"}, encrypt: 0, encoding: utf8
+[2019-10-18T10:36:23.175] [INFO] default - gate[gate200], server[127.0.0.1], address[127.0.0.1:54686] connect succeed
+[2019-10-18T10:36:23.176] [TRACE] default - receive gate[gate200], server[127.0.0.1], address[127.0.0.1:54686] : {"passport":"57da00080e","server":5301,"servername":"199-5301","encoding":"utf8","gate":"gate200","publishId":1,"action":"r_setstep","recode":0}, encryptMark: 0, encoding: utf8

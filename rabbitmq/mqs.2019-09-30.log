@@ -1,0 +1,14 @@
+[2019-09-30T13:39:48.958] [INFO] default - 
+[2019-09-30T13:39:50.360] [INFO] default - 进程类型 undefined
+[2019-09-30T13:40:10.312] [INFO] default - 
+[2019-09-30T13:40:10.463] [INFO] default - 进程类型 consumer
+[2019-09-30T13:40:10.594] [INFO] default - AMQP connect successfully!
+[2019-09-30T13:40:10.641] [INFO] default - AMQP connect successfully!
+[2019-09-30T13:40:10.709] [INFO] default - mqsServer.initKeepAlive startup success
+[2019-09-30T13:40:10.710] [INFO] default - mqsServer.initMqsEvent startup success
+[2019-09-30T13:40:46.347] [INFO] default - app is starting at port 3000
+[2019-09-30T13:40:46.500] [INFO] default - 进程类型 consumer
+[2019-09-30T13:40:46.578] [INFO] default - AMQP connect successfully!
+[2019-09-30T13:40:46.625] [INFO] default - AMQP connect successfully!
+[2019-09-30T13:40:46.661] [INFO] default - mqsServer.initKeepAlive startup success
+[2019-09-30T13:40:46.662] [INFO] default - mqsServer.initMqsEvent startup success

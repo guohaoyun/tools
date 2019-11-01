@@ -8,6 +8,7 @@
     "bluebird": "^3.5.5",
     "chance": "^1.0.18",
     "eslint": "^6.0.1",
+    "iconv-lite": "^0.5.0",
     "ipaddr.js": "^1.9.1",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
@@ -15,11 +16,14 @@
     "koa-session": "^5.12.2",
     "log4js": "^4.5.1",
     "mongodb": "^3.2.7",
+    "node-rsa": "^1.0.6",
     "node-schedule": "^1.3.2",
+    "node-zstd": "^2.0.1",
     "request": "^2.88.0",
     "request-promise": "^4.2.4",
     "should": "^13.2.3",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "zlib": "^1.0.5"
   },
   "devDependencies": {
     "mocha": "^6.2.0"
