@@ -178,7 +178,7 @@ describe('消费-暂停-消费（多条推送）', async () => {
       await stop();
       await Promise.delay(100);
       await start();
-      await Promise.delay(1000);
+      await Promise.delay(3000);
     } catch (error) {
       console.log(error);
     }
