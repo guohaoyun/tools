@@ -1,0 +1,3 @@
+栈: LPUSH + LPOP
+队列: LPUSH + RPOP
+阻塞队列: LPUSH + BRPOP
