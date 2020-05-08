@@ -1,0 +1,6 @@
+最普通的就是用: SET user:1 JSON.stringify({ name: "ghy", posname: "web" })
+常见的有: MSET user:1:name ghy user:1:posname web
+高级一点: HMSET user 1:name ghy 1:posname web
+数量太多可以取mod分配:
+HMSET user1 1:name ghy 1:posname web
+HMSET user2 2:name ghy 2:posname web

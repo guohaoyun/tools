@@ -1,0 +1,3 @@
+SADD key value
+重复抽: SRANDMEMBER key [count]
+不可重复抽: SPOP key [count]
